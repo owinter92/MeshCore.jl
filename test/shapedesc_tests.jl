@@ -1,9 +1,10 @@
+using StaticArrays
 using MeshCore: H8, L2, L3, NoSuchShape, P1, Q4, Q8, T3, T4, T6
 using MeshCore: manifdim, nvertices, nfacets, nridges, n1storderv, nshifts, nfeatofdim
 using MeshCore: SHAPE_DESC
 
-function _is_not_tested(testset,test)
-    tested = filter!(x -> x != "NoSuchShape", [keys(testset)...])
+function _not_tested(testset,test)
+    tested = [keys(testset)...]
     all = [keys(SHAPE_DESC)...]
     not_tested = filter(x -> !(x in tested), all)
     @error "$(test): Missing test for $(not_tested)."
@@ -23,7 +24,7 @@ end
         "T6" => 2
     )
     if length(keys(SHAPE_DESC)) != length(keys(MD))
-        _is_not_tested(MD, "manifdim")
+        _not_tested(MD, "manifdim")
     end
     for (shape, v) in MD
         r = @test manifdim(SHAPE_DESC[shape]) == v
@@ -47,7 +48,7 @@ end
         "T6" => 6
     )
     if length(keys(SHAPE_DESC)) != length(keys(NV))
-        _is_not_tested(NV, "nvertices")
+        _not_tested(NV, "nvertices")
     end
     for (shape, v) in NV
         r = @test nvertices(SHAPE_DESC[shape]) == v
@@ -71,7 +72,7 @@ end
         "T6" => 3
     )
     if length(keys(SHAPE_DESC)) != length(keys(NF))
-        _is_not_tested(NF, "nfacets")
+        _not_tested(NF, "nfacets")
     end
     for (shape, v) in NF
         r = @test nfacets(SHAPE_DESC[shape]) == v
@@ -95,7 +96,7 @@ end
         "T6" => 3
     )
     if length(keys(SHAPE_DESC)) != length(keys(NR))
-        _is_not_tested(NR, "nridges")
+        _not_tested(NR, "nridges")
     end
     for (shape, v) in NR
         r = @test nridges(SHAPE_DESC[shape]) == v
@@ -119,7 +120,7 @@ end
         "T6" => 3
     )
     if length(keys(SHAPE_DESC)) != length(keys(NFOV))
-        _is_not_tested(NFOV, "n1storderv")
+        _not_tested(NFOV, "n1storderv")
     end
     for (shape, v) in NFOV
         r = @test n1storderv(SHAPE_DESC[shape]) == v
@@ -143,7 +144,7 @@ end
         "T6" => 3
     )
     if length(keys(SHAPE_DESC)) != length(keys(NSHIFTS))
-        _is_not_tested(NSHIFTS, "nshifts")
+        _not_tested(NSHIFTS, "nshifts")
     end
     for (shape, v) in NSHIFTS
         r = @test nshifts(SHAPE_DESC[shape]) == v
@@ -152,9 +153,6 @@ end
         end
     end
 end
-
-#FD TODO
-#RD TODO
 
 @testset "nfeatofdim" begin
     NFOD = Dict(
@@ -170,7 +168,7 @@ end
         "T6" => [6, 3, 1, 0]
     )
     if length(keys(SHAPE_DESC)) != length(keys(NFOD))
-        _is_not_tested(NFOD, "nshifts")
+        _not_tested(NFOD, "nshifts")
     end
     for (shape, v) in NFOD
         for d in 0:3
@@ -179,5 +177,81 @@ end
                 @error "Error in nfeatofdim($(shape),$(d))"
             end
         end
+    end
+end
+
+function _not_tested(testset,test)
+    tested = [keys(testset)...]
+    all = filter!(x -> x != "NoSuchShape", [keys(SHAPE_DESC)...])
+    not_tested = filter(x -> !(x in tested), all)
+    @error "$(test): Missing test for $(not_tested)."
+end
+
+@testset "shape descriptors" begin 
+    DEF = Dict(
+        "H8" => Dict(
+            "facetdesc" => Q4,
+            "facets" => SMatrix{6,4}([8 4 1 5; 7 6 2 3; 6 5 1 2; 7 3 4 8; 3 2 1 4; 7 8 5 6]),
+            "ridgedesc" => L2,
+            "ridges" => SMatrix{12,2}([8 7; 5 6; 1 2; 4 3; 6 7; 5 8; 1 4; 2 3; 3 7; 4 8; 1 5; 2 6])
+        ),
+        "L2" => Dict(
+            "facetdesc" => P1,
+            "facets" => SMatrix{2,1}([1; 2]),
+            "ridgedesc" => NoSuchShape,
+            "ridges" => SMatrix{0,0}(Int64[])
+        ),
+        "L3" => Dict(
+            "facetdesc" => P1,
+            "facets" => SMatrix{2,1}([1; 2]),
+            "ridgedesc" => NoSuchShape,
+            "ridges" => SMatrix{0,0}(Int64[])
+        ), 
+        "P1" => Dict(
+            "facetdesc" => NoSuchShape,
+            "facets" => SMatrix{0,0}(Int64[]),
+            "ridgedesc" => NoSuchShape,
+            "ridges" => SMatrix{0,0}(Int64[])
+        ),
+        "Q4" => Dict(
+            "facetdesc" => L2,
+            "facets" => SMatrix{4,2}([1 4; 2 3; 1 2; 4 3]),
+            "ridgedesc" => P1,
+            "ridges" => SMatrix{4,1}([1; 2; 3; 4])
+        ),
+        "Q8" => Dict(
+            "facetdesc" => L3,
+            "facets" => SMatrix{4,3}([1 4 8; 2 3 6; 1 2 5; 4 3 7]),
+            "ridgedesc" => P1,
+            "ridges" => SMatrix{4,1}([1; 2; 3; 4])
+        ),
+        "T3" => Dict(
+            "facetdesc" => L2,
+            "facets" => SMatrix{3,2}([2 3; 3 1; 1 2]),
+            "ridgedesc" => P1,
+            "ridges" => SMatrix{3,1}([1; 2; 3])
+        ),
+        "T4" => Dict(
+            "facetdesc" => T3,
+            "facets" => SMatrix{4,3}([2 3 4; 1 4 3; 4 1 2; 3 2 1]),
+            "ridgedesc" => L2,
+            "ridges" => SMatrix{6,2}([1 4; 2 3; 1 2; 3 4; 4 2; 1 3])
+        ),
+        "T6" => Dict(
+            "facetdesc" => L3,
+            "facets" => SMatrix{3,3}([2 3 5; 3 1 6; 1 2 4]),
+            "ridgedesc" => P1,
+            "ridges" => SMatrix{3,1}([1; 2; 3])
+        )
+    )
+    if (length(keys(SHAPE_DESC)) - 1) != length(keys(DEF))
+        _not_tested(DEF, "shape descriptors")
+    end
+    for (shape, v) in DEF
+        @test SHAPE_DESC[shape].name == shape
+        @test SHAPE_DESC[shape].facetdesc == v["facetdesc"]
+        @test SHAPE_DESC[shape].ridgedesc == v["ridgedesc"]
+        @test SHAPE_DESC[shape].facets == v["facets"]
+        @test SHAPE_DESC[shape].ridges == v["ridges"]
     end
 end
