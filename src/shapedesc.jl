@@ -432,6 +432,7 @@ const Q8 = Q8ShapeDesc{
 Dictionary of all the descriptors.
 """
 const SHAPE_DESC = Dict(
+    "NoSuchShape" => NoSuchShape,
     "P1" => P1,
     "L2" => L2,
     "T3" => T3,
